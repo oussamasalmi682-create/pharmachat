@@ -6,7 +6,7 @@ export default async function Sidebar() {
   const patients = await getPatients();
 
   return (
-    <aside className="w-[360px] flex-shrink-0 flex flex-col h-full border-r border-[#d1d7db] overflow-hidden">
+    <aside className="w-[360px] flex-shrink-0 flex flex-col min-h-0 border-r border-[#d1d7db] overflow-hidden">
       <SidebarClient patients={patients} />
     </aside>
   );

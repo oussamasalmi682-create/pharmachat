@@ -46,6 +46,8 @@ body {
 /* Textarea auto-resize base */
 textarea {
   field-sizing: content;
+  max-height: 120px;
+  min-height: 22px;
 }
 
 /* --- Premium Animations --- */

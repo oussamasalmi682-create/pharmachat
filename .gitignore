@@ -42,3 +42,5 @@ next-env.d.ts
 
 # generated files (local only)
 pharmachat-explication-code.html
+
+/lib/generated/prisma

@@ -56,7 +56,7 @@ interface QuickActionsProps {
 
 export default function QuickActions({ onAction }: QuickActionsProps) {
   return (
-    <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 border-t border-gray-200 overflow-x-auto scrollbar-thin">
+    <div className="flex-shrink-0 flex items-center gap-2 px-4 py-2 bg-gray-50 border-t border-gray-200 overflow-x-auto">
       <span className="text-[12px] text-gray-500 font-semibold flex-shrink-0 mr-1 uppercase tracking-wide">
         Actions rapides :
       </span>

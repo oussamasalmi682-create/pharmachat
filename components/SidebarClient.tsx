@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Patient } from '@/lib/data';
@@ -33,9 +33,27 @@ function ChannelBadge({ channel }: { channel: 'whatsapp' | 'mobile' }) {
   );
 }
 
-export default function SidebarClient({ patients }: { patients: Patient[] }) {
+export default function SidebarClient({ patients: initialPatients }: { patients: Patient[] }) {
+  const [patients, setPatients] = useState<Patient[]>(initialPatients);
   const [search, setSearch] = useState('');
   const pathname = usePathname();
+
+  // ── Polling : met à jour la liste et les unread counts toutes les 5s ──────
+  useEffect(() => {
+    const poll = async () => {
+      try {
+        const res = await fetch('/api/patients');
+        if (!res.ok) return;
+        const fresh: Patient[] = await res.json();
+        setPatients(fresh);
+      } catch {
+        // Silencieux si réseau coupé brièvement
+      }
+    };
+
+    const interval = setInterval(poll, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   const filtered = patients.filter(
     (p) =>
@@ -46,7 +64,7 @@ export default function SidebarClient({ patients }: { patients: Patient[] }) {
   const totalUnread = patients.reduce((acc, p) => acc + p.unreadCount, 0);
 
   return (
-    <div className="flex flex-col h-full bg-gray-50">
+    <div className="flex flex-col flex-1 min-h-0 overflow-hidden bg-gray-50">
       {/* Sidebar Header */}
       <div className="flex items-center justify-between px-4 py-3 bg-gray-100 border-b border-gray-200">
         <div className="flex items-center gap-3">
@@ -100,7 +118,7 @@ export default function SidebarClient({ patients }: { patients: Patient[] }) {
       </div>
 
       {/* Patient List */}
-      <div className="flex-1 overflow-y-auto bg-gray-50">
+      <div className="flex-1 overflow-y-auto bg-gray-50 min-h-0">
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-32 gap-2 text-gray-400">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-8 h-8">

@@ -3,6 +3,8 @@ import { getPatientById, getPatients } from '@/lib/data';
 import ChatHeader from '@/components/ChatHeader';
 import ChatContainer from '@/components/ChatContainer';
 
+export const revalidate = 10;
+
 // Pre-generate all patient pages at build time (Next.js 16)
 export async function generateStaticParams() {
   const patients = await getPatients();
@@ -37,7 +39,7 @@ export default async function ChatPage({ params }: ChatPageProps) {
   }
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
       {/* Chat header — Server Component, shows patient info */}
       <ChatHeader patient={patient} />
 

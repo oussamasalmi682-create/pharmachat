@@ -15,12 +15,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" className="h-full">
-      <body className="h-full flex overflow-hidden bg-[#f0f2f5]">
+      <body className="h-[100dvh] w-screen flex overflow-hidden bg-[#f0f2f5]">
         {/* Sidebar — Server Component with async data fetching */}
         <Sidebar />
 
         {/* Main content area */}
-        <main className="flex-1 flex flex-col overflow-hidden">
+        <main className="flex-1 flex flex-col min-h-0 overflow-hidden">
           {children}
         </main>
       </body>

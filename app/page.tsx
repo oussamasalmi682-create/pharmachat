@@ -1,12 +1,14 @@
 import { getPatients } from '@/lib/data';
 
+export const revalidate = 30; // cache 30s — les stats se mettent à jour via le polling client
+
 export default async function HomePage() {
   const patients = await getPatients();
   const totalUnread = patients.reduce((acc, p) => acc + p.unreadCount, 0);
   const onlineCount = patients.filter((p) => p.status === 'online').length;
 
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-gradient-to-br from-[#f0f2f5] to-[#e8ecef] select-none relative overflow-hidden h-full">
+    <div className="flex flex-col flex-1 min-h-0 items-center justify-start overflow-y-auto bg-gradient-to-br from-[#f0f2f5] to-[#e8ecef] select-none relative py-10">
       
       {/* Animated Decorative Background Orbs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">

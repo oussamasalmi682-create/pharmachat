@@ -59,38 +59,87 @@ interface ChatContainerProps {
 export default function ChatContainer({ patient }: ChatContainerProps) {
   const [messages, setMessages] = useState<Message[]>(patient.messages);
   const [inputValue, setInputValue] = useState('');
+  const [sending, setSending] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
+  // ── Auto-scroll vers le bas à chaque nouveau message ─────────────────────
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
 
+  // ── Reset quand on change de patient ─────────────────────────────────────
   useEffect(() => {
     setMessages(patient.messages);
     setInputValue('');
-    // Dépend uniquement de patient.id : le changement de patient suffit à réinitialiser.
-    // patient.messages est un tableau (référence instable) — ne pas l'inclure.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [patient.id]);
 
-  const sendMessage = (content: string) => {
-    const trimmed = content.trim();
-    if (!trimmed) return;
-
-    const newMsg: Message = {
-      id: `msg-${Date.now()}`,
-      content: trimmed,
-      sender: 'pharmacist',
-      timestamp: new Date().toISOString(),
-      status: 'sent',
+  // ── Polling : récupère les nouveaux messages toutes les 3 secondes ────────
+  // Permet de voir les messages WhatsApp arriver sans recharger la page
+  useEffect(() => {
+    const poll = async () => {
+      try {
+        const res = await fetch(`/api/patients/${patient.id}/messages`);
+        if (!res.ok) return;
+        const fresh: Message[] = await res.json();
+        // Ne met à jour que si le nombre de messages a changé
+        setMessages((prev) => {
+          // Ne pas écraser si un message optimiste est encore en attente
+          if (prev.some((m) => m.id.startsWith('temp-'))) return prev;
+          if (fresh.length !== prev.length) return fresh;
+          return prev;
+        });
+      } catch {
+        // Silencieux — pas d'affichage d'erreur si le réseau est coupé brièvement
+      }
     };
 
-    setMessages((prev) => [...prev, newMsg]);
+    const interval = setInterval(poll, 3000);
+    return () => clearInterval(interval); // nettoyage au démontage du composant
+  }, [patient.id]);
+
+  // ── Envoi d'un message ────────────────────────────────────────────────────
+  const sendMessage = async (content: string) => {
+    const trimmed = content.trim();
+    if (!trimmed || sending) return;
+
+    // Mise à jour optimiste : affiche le message immédiatement dans l'UI
+    // sans attendre la réponse de l'API (ressenti instantané pour l'utilisateur)
+    const tempId = `temp-${Date.now()}`;
+    const optimistic: Message = {
+      id:        tempId,
+      content:   trimmed,
+      sender:    'pharmacist',
+      timestamp: new Date().toISOString(),
+      status:    'sent',
+    };
+    setMessages((prev) => [...prev, optimistic]);
     setInputValue('');
     inputRef.current?.focus();
+
+    try {
+      setSending(true);
+      const res = await fetch(`/api/patients/${patient.id}/messages`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ content: trimmed }),
+      });
+
+      if (res.ok) {
+        const saved: Message = await res.json();
+        // Remplace le message temporaire par le message sauvegardé (avec le vrai ID)
+        setMessages((prev) =>
+          prev.map((m) => (m.id === tempId ? saved : m))
+        );
+      }
+    } catch {
+      // En cas d'erreur réseau, le message temp reste visible (pas de suppression)
+    } finally {
+      setSending(false);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -101,11 +150,14 @@ export default function ChatContainer({ patient }: ChatContainerProps) {
   };
 
   return (
-    <div className="flex flex-col flex-1 overflow-hidden bg-white">
+    <div
+      className="flex-1 min-h-0 bg-white"
+      style={{ display: 'grid', gridTemplateRows: '1fr auto auto' }}
+    >
       {/* ── Messages area ── */}
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto px-8 md:px-16 py-6 space-y-3 bg-white"
+        className="overflow-y-auto px-8 md:px-16 py-6 space-y-3 bg-white"
       >
         {messages.map((msg, index) => {
           const showDateSep =
@@ -187,15 +239,10 @@ export default function ChatContainer({ patient }: ChatContainerProps) {
             ref={inputRef}
             rows={1}
             value={inputValue}
-            onChange={(e) => {
-              setInputValue(e.target.value);
-              e.target.style.height = 'auto';
-              e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`;
-            }}
+            onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Écrire un message..."
             className="w-full text-[15px] text-gray-800 placeholder-gray-400 outline-none resize-none bg-transparent leading-relaxed"
-            style={{ maxHeight: '120px', minHeight: '22px' }}
           />
         </div>
 
