@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Patient, Message } from '@/lib/data';
+import { getSocket } from '@/lib/socket-client';
 import QuickActions from './QuickActions';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -77,28 +78,20 @@ export default function ChatContainer({ patient }: ChatContainerProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [patient.id]);
 
-  // ── Polling : récupère les nouveaux messages toutes les 3 secondes ────────
-  // Permet de voir les messages WhatsApp arriver sans recharger la page
+  // ── Socket.io : écoute les nouveaux messages en temps réel ──────────────
   useEffect(() => {
-    const poll = async () => {
-      try {
-        const res = await fetch(`/api/patients/${patient.id}/messages`);
-        if (!res.ok) return;
-        const fresh: Message[] = await res.json();
-        // Ne met à jour que si le nombre de messages a changé
-        setMessages((prev) => {
-          // Ne pas écraser si un message optimiste est encore en attente
-          if (prev.some((m) => m.id.startsWith('temp-'))) return prev;
-          if (fresh.length !== prev.length) return fresh;
-          return prev;
-        });
-      } catch {
-        // Silencieux — pas d'affichage d'erreur si le réseau est coupé brièvement
-      }
+    const socket = getSocket();
+
+    const handleNewMessage = ({ patientId, message }: { patientId: string; message: Message }) => {
+      if (patientId !== patient.id) return;
+      setMessages((prev) => {
+        if (prev.some((m) => m.id === message.id)) return prev;
+        return [...prev, message];
+      });
     };
 
-    const interval = setInterval(poll, 3000);
-    return () => clearInterval(interval); // nettoyage au démontage du composant
+    socket.on('new_message', handleNewMessage);
+    return () => { socket.off('new_message', handleNewMessage); };
   }, [patient.id]);
 
   // ── Envoi d'un message ────────────────────────────────────────────────────

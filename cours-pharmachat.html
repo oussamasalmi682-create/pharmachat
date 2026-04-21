@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PharmaChat — Documentation Technique Complète</title>
+  <style>
+    /* ── Reset & Base ──────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      font-size: 13.5px;
+      line-height: 1.7;
+      color: #1a202c;
+      background: #fff;
+    }
+
+    /* ── Print ─────────────────────────────────────────── */
+    @media print {
+      body { font-size: 11.5px; }
+      .no-print { display: none !important; }
+      .page-break { page-break-before: always; }
+      section { page-break-inside: avoid; }
+      pre { page-break-inside: avoid; }
+      h2 { page-break-after: avoid; }
+    }
+
+    /* ── Layout ─────────────────────────────────────────── */
+    .container { max-width: 900px; margin: 0 auto; padding: 40px 48px; }
+
+    /* ── Cover Page ─────────────────────────────────────── */
+    .cover {
+      min-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      border-bottom: 3px solid #00a884;
+      padding-bottom: 60px;
+      margin-bottom: 60px;
+    }
+    .cover .logo {
+      width: 80px; height: 80px;
+      background: linear-gradient(135deg, #00a884, #128c7e);
+      border-radius: 24px;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 24px;
+      box-shadow: 0 8px 30px rgba(0,168,132,0.3);
+    }
+    .cover .logo svg { width: 44px; height: 44px; fill: white; }
+    .cover h1 { font-size: 38px; font-weight: 800; color: #00a884; letter-spacing: -1px; }
+    .cover .subtitle { font-size: 18px; color: #4a5568; margin-top: 10px; font-weight: 500; }
+    .cover .meta { margin-top: 40px; color: #718096; font-size: 13px; }
+    .cover .meta strong { color: #2d3748; }
+    .cover .badge-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 28px; }
+    .badge {
+      padding: 5px 14px; border-radius: 999px; font-size: 12px; font-weight: 600;
+      border: 1.5px solid currentColor;
+    }
+    .badge-green { color: #00a884; border-color: #00a884; background: #f0fdf4; }
+    .badge-blue  { color: #3b82f6; border-color: #3b82f6; background: #eff6ff; }
+    .badge-purple{ color: #8b5cf6; border-color: #8b5cf6; background: #f5f3ff; }
+    .badge-orange{ color: #f59e0b; border-color: #f59e0b; background: #fffbeb; }
+    .badge-red   { color: #ef4444; border-color: #ef4444; background: #fef2f2; }
+
+    /* ── Table of Contents ──────────────────────────────── */
+    .toc { background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 28px 32px; margin-bottom: 48px; }
+    .toc h2 { font-size: 16px; font-weight: 700; color: #2d3748; margin-bottom: 16px; }
+    .toc ol { list-style: none; counter-reset: toc-counter; }
+    .toc > ol > li { counter-increment: toc-counter; margin-bottom: 8px; }
+    .toc > ol > li::before {
+      content: counter(toc-counter) ". ";
+      font-weight: 700; color: #00a884;
+    }
+    .toc a { color: #2d3748; text-decoration: none; font-weight: 500; }
+    .toc a:hover { color: #00a884; }
+    .toc .sub { padding-left: 20px; margin-top: 4px; font-size: 12.5px; color: #718096; }
+    .toc .sub li { margin-bottom: 2px; }
+    .toc .sub li::before { content: "— "; }
+
+    /* ── Headings ───────────────────────────────────────── */
+    h2 {
+      font-size: 22px; font-weight: 800; color: #1a202c;
+      margin: 48px 0 16px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #00a884;
+      display: flex; align-items: center; gap: 10px;
+    }
+    h2 .num {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 32px; height: 32px; border-radius: 8px;
+      background: #00a884; color: white;
+      font-size: 14px; font-weight: 800; flex-shrink: 0;
+    }
+    h3 {
+      font-size: 15.5px; font-weight: 700; color: #2d3748;
+      margin: 28px 0 10px;
+    }
+    h4 { font-size: 13.5px; font-weight: 700; color: #4a5568; margin: 18px 0 6px; }
+
+    p { margin-bottom: 12px; }
+
+    /* ── Info boxes ─────────────────────────────────────── */
+    .box {
+      border-radius: 10px; padding: 16px 20px; margin: 16px 0;
+      border-left: 4px solid;
+    }
+    .box-info    { background: #eff6ff; border-color: #3b82f6; }
+    .box-success { background: #f0fdf4; border-color: #00a884; }
+    .box-warn    { background: #fffbeb; border-color: #f59e0b; }
+    .box-tip     { background: #f5f3ff; border-color: #8b5cf6; }
+    .box-title   { font-weight: 700; font-size: 13px; margin-bottom: 4px; }
+    .box-info    .box-title { color: #3b82f6; }
+    .box-success .box-title { color: #00a884; }
+    .box-warn    .box-title { color: #d97706; }
+    .box-tip     .box-title { color: #7c3aed; }
+
+    /* ── Code blocks ────────────────────────────────────── */
+    pre {
+      background: #1e293b; color: #e2e8f0;
+      border-radius: 10px; padding: 18px 22px;
+      overflow-x: auto; font-size: 12px; line-height: 1.65;
+      margin: 14px 0;
+      font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    }
+    code {
+      font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+      background: #edf2f7; color: #c53030;
+      padding: 1px 6px; border-radius: 4px; font-size: 12.5px;
+    }
+    pre code { background: transparent; color: inherit; padding: 0; border-radius: 0; font-size: inherit; }
+
+    /* Syntax highlighting helpers */
+    .kw  { color: #93c5fd; } /* keyword */
+    .fn  { color: #86efac; } /* function */
+    .str { color: #fca5a5; } /* string */
+    .cmt { color: #64748b; font-style: italic; } /* comment */
+    .cls { color: #fde68a; } /* class/type */
+    .num-lit { color: #f9a8d4; } /* number literal */
+    .var { color: #e2e8f0; } /* variable */
+    .punc{ color: #94a3b8; } /* punctuation */
+    .dec { color: #c4b5fd; } /* decorator */
+
+    /* ── Diagrams ───────────────────────────────────────── */
+    .diagram {
+      background: #f8fafc; border: 1.5px solid #e2e8f0;
+      border-radius: 12px; padding: 24px; margin: 20px 0;
+      font-family: 'Cascadia Code', monospace; font-size: 12px;
+      line-height: 1.9; color: #2d3748;
+    }
+    .flow-arrow { color: #00a884; font-weight: bold; font-size: 16px; }
+    .flow-label { color: #718096; font-style: italic; font-size: 11px; }
+
+    /* ── Tables ─────────────────────────────────────────── */
+    table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 13px; }
+    th {
+      background: #00a884; color: white;
+      padding: 10px 14px; text-align: left; font-weight: 700; font-size: 12.5px;
+    }
+    td { padding: 9px 14px; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+    tr:nth-child(even) td { background: #f7fafc; }
+    td code { font-size: 11.5px; }
+
+    /* ── File tree ──────────────────────────────────────── */
+    .tree {
+      background: #f8fafc; border: 1.5px solid #e2e8f0;
+      border-radius: 10px; padding: 18px 22px; margin: 14px 0;
+      font-family: 'Cascadia Code', monospace; font-size: 12.5px;
+      line-height: 2; color: #2d3748;
+    }
+    .tree .dir  { color: #3b82f6; font-weight: 700; }
+    .tree .file { color: #1a202c; }
+    .tree .note { color: #718096; font-style: italic; font-size: 11.5px; }
+
+    /* ── Step list ──────────────────────────────────────── */
+    .steps { list-style: none; }
+    .steps li {
+      display: flex; gap: 14px; margin-bottom: 16px; align-items: flex-start;
+    }
+    .steps .step-num {
+      flex-shrink: 0;
+      width: 28px; height: 28px; border-radius: 50%;
+      background: #00a884; color: white;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 13px;
+    }
+    .steps .step-body { flex: 1; padding-top: 4px; }
+
+    /* ── Print button ───────────────────────────────────── */
+    .print-btn {
+      position: fixed; bottom: 24px; right: 24px;
+      background: #00a884; color: white;
+      border: none; border-radius: 999px;
+      padding: 12px 24px; font-size: 14px; font-weight: 700;
+      cursor: pointer; box-shadow: 0 4px 20px rgba(0,168,132,0.4);
+      z-index: 999;
+    }
+    .print-btn:hover { background: #128c7e; }
+
+    ul, ol { padding-left: 22px; margin-bottom: 12px; }
+    li { margin-bottom: 5px; }
+    strong { font-weight: 700; }
+    em { font-style: italic; }
+
+    .separator { border: none; border-top: 1.5px solid #e2e8f0; margin: 40px 0; }
+    .tag { display: inline-block; background: #f0fdf4; color: #00a884; border: 1px solid #86efac; border-radius: 6px; padding: 2px 8px; font-size: 11.5px; font-weight: 600; margin: 2px; }
+    .highlight { background: #fef9c3; padding: 1px 3px; border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<button class="print-btn no-print" onclick="window.print()">Imprimer en PDF</button>
+
+<div class="container">
+
+<!-- ══════════════════ COVER ══════════════════ -->
+<div class="cover">
+  <div class="logo">
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+    </svg>
+  </div>
+  <h1>PharmaChat</h1>
+  <p class="subtitle">Documentation Technique Complète</p>
+  <p class="subtitle" style="font-size:14px; color:#718096; margin-top:6px;">Interface de gestion des demandes pharmaceutiques via WhatsApp &amp; Mobile</p>
+
+  <div class="badge-row">
+    <span class="badge badge-green">Next.js 16</span>
+    <span class="badge badge-blue">TypeScript</span>
+    <span class="badge badge-purple">Prisma ORM</span>
+    <span class="badge badge-orange">MongoDB</span>
+    <span class="badge badge-green">Socket.io</span>
+    <span class="badge badge-red">Twilio WhatsApp</span>
+    <span class="badge badge-blue">Tailwind CSS v4</span>
+  </div>
+
+  <div class="meta">
+    <p><strong>Auteur :</strong> Oussama Salmi &nbsp;|&nbsp; <strong>Date :</strong> Avril 2026</p>
+    <p style="margin-top:6px; font-style:italic;">Projet réalisé dans le cadre du stage de fin d'études</p>
+  </div>
+</div>
+
+<!-- ══════════════════ TOC ══════════════════ -->
+<div class="toc">
+  <h2>Table des matières</h2>
+  <ol>
+    <li><a href="#s1">Vue d'ensemble du projet</a>
+      <ul class="sub"><li>Problématique &amp; objectif</li><li>Architecture globale</li></ul>
+    </li>
+    <li><a href="#s2">Stack technique</a>
+      <ul class="sub"><li>Pourquoi chaque outil ?</li></ul>
+    </li>
+    <li><a href="#s3">Structure des fichiers</a></li>
+    <li><a href="#s4">Base de données — Prisma &amp; MongoDB</a>
+      <ul class="sub"><li>Modèles Patient &amp; Message</li><li>Connexion Prisma</li></ul>
+    </li>
+    <li><a href="#s5">Couche données — lib/data.ts</a>
+      <ul class="sub"><li>Types TypeScript</li><li>Fonctions publiques</li></ul>
+    </li>
+    <li><a href="#s6">API REST — Routes Next.js</a>
+      <ul class="sub"><li>GET &amp; POST /api/patients/[id]/messages</li><li>POST /api/webhook (Twilio)</li></ul>
+    </li>
+    <li><a href="#s7">Temps réel — Socket.io</a>
+      <ul class="sub"><li>Serveur custom (server.js)</li><li>Client React</li></ul>
+    </li>
+    <li><a href="#s8">Intégration WhatsApp — Twilio</a>
+      <ul class="sub"><li>Envoi de messages</li><li>Réception via webhook</li></ul>
+    </li>
+    <li><a href="#s9">Composants React</a>
+      <ul class="sub"><li>Server Components vs Client Components</li><li>Détail de chaque composant</li></ul>
+    </li>
+    <li><a href="#s10">Flux complet de données</a></li>
+    <li><a href="#s11">Concepts clés expliqués</a></li>
+    <li><a href="#s12">Comment lancer le projet</a></li>
+  </ol>
+</div>
+
+<!-- ══════════════════ S1 ══════════════════ -->
+<h2 id="s1"><span class="num">1</span> Vue d'ensemble du projet</h2>
+
+<h3>Problématique</h3>
+<p>
+Les pharmaciens reçoivent chaque jour des demandes de médicaments via WhatsApp et des applications mobiles.
+Gérer ces conversations en passant d'un écran à l'autre est fastidieux et source d'erreurs.
+</p>
+
+<h3>Solution : PharmaChat</h3>
+<p>
+PharmaChat est une interface web de style <strong>WhatsApp Web</strong> dédiée aux pharmaciens.
+Elle centralise toutes les conversations patients dans une seule application, avec :
+</p>
+<ul>
+  <li><strong>Sidebar</strong> — liste de tous les patients avec indicateurs de non-lus</li>
+  <li><strong>Zone de chat</strong> — historique complet des messages, envoi en temps réel</li>
+  <li><strong>Actions rapides</strong> — réponses prédéfinies (Disponible, Rupture, Ordonnance…)</li>
+  <li><strong>Temps réel</strong> — les nouveaux messages WhatsApp apparaissent immédiatement sans rechargement</li>
+</ul>
+
+<h3>Architecture globale</h3>
+<div class="diagram">
+<pre>
+┌─────────────────────────────────────────────────────────────────────┐
+│                         PHARMACHAT                                  │
+│                                                                     │
+│  ┌──────────────┐   HTTP/WebSocket   ┌───────────────────────────┐  │
+│  │   Navigateur │◄──────────────────►│  Next.js + Socket.io      │  │
+│  │   (React UI) │                    │  (server.js — port 3000)  │  │
+│  └──────────────┘                    └──────────┬────────────────┘  │
+│                                                 │                   │
+│                                          Prisma ORM                 │
+│                                                 │                   │
+│                                    ┌────────────▼───────────────┐   │
+│                                    │       MongoDB Atlas         │   │
+│                                    │  (patients + messages)      │   │
+│                                    └────────────────────────────┘   │
+│                                                                     │
+│  ┌──────────────┐   HTTPS POST      ┌───────────────────────────┐  │
+│  │    Twilio    │──────────────────►│  /api/webhook             │  │
+│  │  (WhatsApp)  │                   │  (reçoit les messages)     │  │
+│  └──────────────┘                   └───────────────────────────┘  │
+│                                                                     │
+│  ┌──────────────┐   API Twilio      ┌───────────────────────────┐  │
+│  │    Patient   │◄──────────────────│  /api/patients/[id]/msgs  │  │
+│  │   WhatsApp   │                   │  (envoi de messages)       │  │
+│  └──────────────┘                   └───────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────────┘
+</pre>
+</div>
+
+<!-- ══════════════════ S2 ══════════════════ -->
+<div class="page-break"></div>
+<h2 id="s2"><span class="num">2</span> Stack technique</h2>
+
+<table>
+  <thead>
+    <tr><th>Technologie</th><th>Version</th><th>Rôle</th><th>Pourquoi ce choix ?</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Next.js</strong></td>
+      <td>16.2.3</td>
+      <td>Framework React full-stack</td>
+      <td>App Router intégré, routes API sans backend séparé, rendu côté serveur</td>
+    </tr>
+    <tr>
+      <td><strong>TypeScript</strong></td>
+      <td>5.x</td>
+      <td>Typage statique</td>
+      <td>Détecte les erreurs à la compilation, autocomplétion IDE, maintenabilité</td>
+    </tr>
+    <tr>
+      <td><strong>Tailwind CSS</strong></td>
+      <td>4.x</td>
+      <td>Styles utilitaires</td>
+      <td>Pas de fichiers CSS séparés, cohérence visuelle, responsive facile</td>
+    </tr>
+    <tr>
+      <td><strong>Prisma ORM</strong></td>
+      <td>6.x</td>
+      <td>Accès base de données</td>
+      <td>Schéma type-safe, migrations auto, supporte MongoDB</td>
+    </tr>
+    <tr>
+      <td><strong>MongoDB</strong></td>
+      <td>Atlas</td>
+      <td>Base de données</td>
+      <td>Stockage flexible (tableaux de médicaments), hébergement cloud gratuit</td>
+    </tr>
+    <tr>
+      <td><strong>Socket.io</strong></td>
+      <td>4.x</td>
+      <td>Communication temps réel</td>
+      <td>WebSocket avec fallback polling, notifications push instantanées</td>
+    </tr>
+    <tr>
+      <td><strong>Twilio</strong></td>
+      <td>API WhatsApp</td>
+      <td>Intégration WhatsApp</td>
+      <td>API officielle WhatsApp Business, fiable et bien documentée</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ══════════════════ S3 ══════════════════ -->
+<h2 id="s3"><span class="num">3</span> Structure des fichiers</h2>
+
+<div class="tree">
+<span class="dir">pharmachat/</span><br>
+├── <span class="dir">app/</span>                          <span class="note">— Pages Next.js (App Router)</span><br>
+│   ├── <span class="file">layout.tsx</span>              <span class="note">— Layout racine (Sidebar + contenu)</span><br>
+│   ├── <span class="file">page.tsx</span>                <span class="note">— Page d'accueil (statistiques)</span><br>
+│   ├── <span class="dir">chat/[patientId]/</span><br>
+│   │   └── <span class="file">page.tsx</span>            <span class="note">— Page de conversation dynamique</span><br>
+│   └── <span class="dir">api/</span><br>
+│       ├── <span class="dir">patients/</span><br>
+│       │   ├── <span class="file">route.ts</span>        <span class="note">— GET tous les patients</span><br>
+│       │   └── <span class="dir">[id]/messages/</span><br>
+│       │       └── <span class="file">route.ts</span>    <span class="note">— GET messages / POST envoi</span><br>
+│       └── <span class="dir">webhook/</span><br>
+│           └── <span class="file">route.ts</span>        <span class="note">— Réception messages WhatsApp (Twilio)</span><br>
+├── <span class="dir">components/</span>                   <span class="note">— Composants React réutilisables</span><br>
+│   ├── <span class="file">Sidebar.tsx</span>             <span class="note">— Server Component (chargement données)</span><br>
+│   ├── <span class="file">SidebarClient.tsx</span>       <span class="note">— Client Component (recherche, Socket.io)</span><br>
+│   ├── <span class="file">ChatContainer.tsx</span>       <span class="note">— Client Component (messages, envoi)</span><br>
+│   ├── <span class="file">ChatHeader.tsx</span>          <span class="note">— En-tête patient</span><br>
+│   └── <span class="file">QuickActions.tsx</span>        <span class="note">— Boutons de réponses rapides</span><br>
+├── <span class="dir">lib/</span>                          <span class="note">— Logique partagée</span><br>
+│   ├── <span class="file">data.ts</span>                <span class="note">— Types + requêtes Prisma → UI</span><br>
+│   ├── <span class="file">prisma.ts</span>              <span class="note">— Singleton Prisma Client</span><br>
+│   ├── <span class="file">socket-server.ts</span>        <span class="note">— Accès à l'instance Socket.io serveur</span><br>
+│   └── <span class="file">socket-client.ts</span>        <span class="note">— Singleton Socket.io côté navigateur</span><br>
+├── <span class="dir">prisma/</span><br>
+│   └── <span class="file">schema.prisma</span>           <span class="note">— Schéma base de données</span><br>
+├── <span class="file">server.js</span>                   <span class="note">— Serveur HTTP custom (Next.js + Socket.io)</span><br>
+└── <span class="file">.env</span>                        <span class="note">— Variables d'environnement (secrets)</span>
+</div>
+
+<!-- ══════════════════ S4 ══════════════════ -->
+<div class="page-break"></div>
+<h2 id="s4"><span class="num">4</span> Base de données — Prisma &amp; MongoDB</h2>
+
+<h3>Qu'est-ce que Prisma ?</h3>
+<p>
+Prisma est un <strong>ORM</strong> (Object-Relational Mapper). Il transforme le schéma déclaratif <code>schema.prisma</code>
+en un client TypeScript typé qui permet d'interroger MongoDB avec des fonctions simples au lieu d'écrire du SQL ou des requêtes Mongo brutes.
+</p>
+
+<h3>Schéma — <code>prisma/schema.prisma</code></h3>
+
+<pre><code><span class="cmt">// Connexion à MongoDB</span>
+<span class="kw">datasource</span> <span class="fn">db</span> <span class="punc">{</span>
+  provider = <span class="str">"mongodb"</span>
+  url      = <span class="fn">env</span>(<span class="str">"DATABASE_URL"</span>)
+<span class="punc">}</span>
+
+<span class="cmt">// Modèle Patient</span>
+<span class="kw">model</span> <span class="cls">Patient</span> <span class="punc">{</span>
+  id          <span class="cls">String</span>    <span class="dec">@id @default(auto()) @map("_id") @db.ObjectId</span>
+  phone       <span class="cls">String</span>    <span class="dec">@unique</span>          <span class="cmt">// Numéro WhatsApp unique</span>
+  name        <span class="cls">String</span>
+  channel     <span class="cls">String</span>    <span class="dec">@default("whatsapp")</span>
+  status      <span class="cls">String</span>    <span class="dec">@default("offline")</span>
+  lastSeen    <span class="cls">String</span>    <span class="dec">@default("Hors ligne")</span>
+  unreadCount <span class="cls">Int</span>       <span class="dec">@default(0)</span>
+  medications <span class="cls">String[]</span>                  <span class="cmt">// Tableau — avantage MongoDB</span>
+  avatarColor <span class="cls">String</span>    <span class="dec">@default("#667781")</span>
+  messages    <span class="cls">Message[]</span>                 <span class="cmt">// Relation 1→N</span>
+  createdAt   <span class="cls">DateTime</span>  <span class="dec">@default(now())</span>
+  updatedAt   <span class="cls">DateTime</span>  <span class="dec">@updatedAt</span>
+<span class="punc">}</span>
+
+<span class="cmt">// Modèle Message</span>
+<span class="kw">model</span> <span class="cls">Message</span> <span class="punc">{</span>
+  id          <span class="cls">String</span>   <span class="dec">@id @default(auto()) @map("_id") @db.ObjectId</span>
+  content     <span class="cls">String</span>
+  channel     <span class="cls">String</span>   <span class="dec">@default("whatsapp")</span>
+  isSender    <span class="cls">Boolean</span>  <span class="dec">@default(false)</span>   <span class="cmt">// true = pharmacien, false = patient</span>
+  status      <span class="cls">String</span>   <span class="dec">@default("delivered")</span>
+  whatsappId  <span class="cls">String?</span>                   <span class="cmt">// MessageSid Twilio (déduplication)</span>
+  patientId   <span class="cls">String</span>   <span class="dec">@db.ObjectId</span>
+  patient     <span class="cls">Patient</span>  <span class="dec">@relation(fields: [patientId], references: [id])</span>
+  createdAt   <span class="cls">DateTime</span> <span class="dec">@default(now())</span>
+<span class="punc">}</span>
+</code></pre>
+
+<div class="box box-info">
+  <p class="box-title">Relation Patient → Message</p>
+  <p>Un patient possède plusieurs messages (<strong>relation 1 → N</strong>). Chaque message contient <code>patientId</code>
+  qui pointe vers le patient. Prisma gère cette jointure automatiquement via <code>include: { messages: true }</code>.</p>
+</div>
+
+<h3>Connexion Prisma — <code>lib/prisma.ts</code></h3>
+<p>
+En développement, Next.js recharge les modules fréquemment. Sans précaution, chaque rechargement créerait une nouvelle connexion MongoDB.
+Le pattern <strong>singleton global</strong> résout ce problème :
+</p>
+
+<pre><code><span class="kw">import</span> <span class="punc">{</span> <span class="cls">PrismaClient</span> <span class="punc">}</span> <span class="kw">from</span> <span class="str">'@prisma/client'</span>
+
+<span class="cmt">// Stocké dans globalThis pour survivre aux hot-reloads</span>
+<span class="kw">const</span> <span class="var">globalForPrisma</span> = <span class="var">global</span> <span class="kw">as</span> <span class="punc">{</span> <span class="var">prisma</span>?: <span class="cls">PrismaClient</span> <span class="punc">}</span>
+
+<span class="kw">export const</span> <span class="var">prisma</span> = <span class="var">globalForPrisma</span>.<span class="var">prisma</span> ?? <span class="kw">new</span> <span class="fn">PrismaClient</span>()
+
+<span class="kw">if</span> (<span class="var">process</span>.<span class="var">env</span>.<span class="var">NODE_ENV</span> !== <span class="str">'production'</span>)
+  <span class="var">globalForPrisma</span>.<span class="var">prisma</span> = <span class="var">prisma</span>
+</code></pre>
+
+<!-- ══════════════════ S5 ══════════════════ -->
+<div class="page-break"></div>
+<h2 id="s5"><span class="num">5</span> Couche données — <code>lib/data.ts</code></h2>
+
+<h3>Types TypeScript</h3>
+<p>Ce fichier définit les types que <em>tous</em> les composants utilisent :</p>
+
+<pre><code><span class="kw">export type</span> <span class="cls">Channel</span>       = <span class="str">'whatsapp'</span> | <span class="str">'mobile'</span>
+<span class="kw">export type</span> <span class="cls">MessageSender</span> = <span class="str">'patient'</span> | <span class="str">'pharmacist'</span>
+<span class="kw">export type</span> <span class="cls">MessageStatus</span> = <span class="str">'sent'</span> | <span class="str">'delivered'</span> | <span class="str">'read'</span>
+
+<span class="kw">export interface</span> <span class="cls">Message</span> <span class="punc">{</span>
+  id:        <span class="cls">string</span>
+  content:   <span class="cls">string</span>
+  sender:    <span class="cls">MessageSender</span>
+  timestamp: <span class="cls">string</span>   <span class="cmt">// ISO 8601 — ex: "2026-04-20T10:30:00Z"</span>
+  status:    <span class="cls">MessageStatus</span>
+<span class="punc">}</span>
+
+<span class="kw">export interface</span> <span class="cls">Patient</span> <span class="punc">{</span>
+  id:              <span class="cls">string</span>
+  name:            <span class="cls">string</span>
+  phone:           <span class="cls">string</span>
+  status:          <span class="str">'online'</span> | <span class="str">'offline'</span>
+  lastSeen:        <span class="cls">string</span>
+  unreadCount:     <span class="cls">number</span>
+  medications:     <span class="cls">string[]</span>
+  channel:         <span class="cls">Channel</span>
+  lastMessage:     <span class="cls">string</span>
+  lastMessageTime: <span class="cls">string</span>
+  messages:        <span class="cls">Message[]</span>
+  avatarColor:     <span class="cls">string</span>
+<span class="punc">}</span>
+</code></pre>
+
+<h3>Fonctions publiques</h3>
+<table>
+  <thead><tr><th>Fonction</th><th>Ce qu'elle fait</th><th>Utilisée dans</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><code>getPatients()</code></td>
+      <td>Récupère tous les patients triés par date de dernier message, avec leurs messages</td>
+      <td><code>Sidebar.tsx</code></td>
+    </tr>
+    <tr>
+      <td><code>getPatientById(id)</code></td>
+      <td>Récupère un patient précis avec tous ses messages pour afficher la conversation</td>
+      <td><code>app/chat/[patientId]/page.tsx</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="box box-tip">
+  <p class="box-title">Transformation Prisma → UI</p>
+  <p>Prisma stocke <code>isSender: boolean</code> et <code>createdAt: Date</code>.
+  L'UI attend <code>sender: 'patient'|'pharmacist'</code> et <code>timestamp: string</code>.
+  La fonction interne <code>toUIMessage()</code> fait cette conversion de manière transparente.</p>
+</div>
+
+<!-- ══════════════════ S6 ══════════════════ -->
+<div class="page-break"></div>
+<h2 id="s6"><span class="num">6</span> API REST — Routes Next.js</h2>
+
+<p>
+Next.js App Router permet de définir des routes API dans des fichiers <code>route.ts</code>.
+Chaque export (<code>GET</code>, <code>POST</code>…) correspond au verbe HTTP.
+</p>
+
+<h3>GET /api/patients/[id]/messages</h3>
+<p>Retourne l'historique des messages d'un patient depuis MongoDB.</p>
+
+<pre><code><span class="kw">export async function</span> <span class="fn">GET</span>(<span class="var">_req</span>, <span class="punc">{</span> <span class="var">params</span> <span class="punc">}</span>) <span class="punc">{</span>
+  <span class="kw">const</span> <span class="punc">{</span> <span class="var">id</span> <span class="punc">}</span> = <span class="kw">await</span> <span class="var">params</span>
+
+  <span class="kw">const</span> <span class="var">rows</span> = <span class="kw">await</span> <span class="var">prisma</span>.<span class="var">message</span>.<span class="fn">findMany</span>(<span class="punc">{</span>
+    <span class="var">where</span>:   <span class="punc">{</span> <span class="var">patientId</span>: <span class="var">id</span> <span class="punc">}</span>,
+    <span class="var">orderBy</span>: <span class="punc">{</span> <span class="var">createdAt</span>: <span class="str">'asc'</span> <span class="punc">}</span>,
+  <span class="punc">})</span>
+
+  <span class="kw">return</span> <span class="cls">NextResponse</span>.<span class="fn">json</span>(<span class="var">rows</span>.<span class="fn">map</span>(<span class="var">toUIMessage</span>))
+<span class="punc">}</span>
+</code></pre>
+
+<h3>POST /api/patients/[id]/messages</h3>
+<p>Envoie un message au patient. Fait 3 choses en séquence :</p>
+<ol class="steps">
+  <li><span class="step-num">1</span><span class="step-body">Valide le contenu (non vide) et vérifie que le patient existe en base</span></li>
+  <li><span class="step-num">2</span><span class="step-body">Sauvegarde le message dans MongoDB (<code>isSender: true</code>)</span></li>
+  <li><span class="step-num">3</span><span class="step-body">Envoie le message WhatsApp via l'API Twilio si les variables d'env sont configurées</span></li>
+</ol>
+
+<pre><code><span class="cmt">// Étape 2 : sauvegarde en base</span>
+<span class="kw">const</span> <span class="var">row</span> = <span class="kw">await</span> <span class="var">prisma</span>.<span class="var">message</span>.<span class="fn">create</span>(<span class="punc">{</span>
+  <span class="var">data</span>: <span class="punc">{</span>
+    <span class="var">content</span>,
+    <span class="var">channel</span>:  <span class="var">patient</span>.<span class="var">channel</span>,
+    <span class="var">isSender</span>: <span class="kw">true</span>,    <span class="cmt">// pharmacien envoie</span>
+    <span class="var">status</span>:   <span class="str">'sent'</span>,
+    <span class="var">patientId</span>: <span class="var">id</span>,
+  <span class="punc">}</span>,
+<span class="punc">})</span>
+
+<span class="cmt">// Étape 3 : envoi WhatsApp via Twilio</span>
+<span class="kw">const</span> <span class="var">client</span> = <span class="fn">twilio</span>(<span class="var">accountSid</span>, <span class="var">authToken</span>)
+<span class="kw">await</span> <span class="var">client</span>.<span class="var">messages</span>.<span class="fn">create</span>(<span class="punc">{</span>
+  <span class="var">from</span>: <span class="str">`whatsapp:</span><span class="punc">${</span><span class="var">from</span><span class="punc">}</span><span class="str">`</span>,
+  <span class="var">to</span>:   <span class="str">`whatsapp:</span><span class="punc">${</span><span class="var">patient</span>.<span class="var">phone</span><span class="punc">}</span><span class="str">`</span>,
+  <span class="var">body</span>: <span class="var">content</span>,
+<span class="punc">})</span>
+</code></pre>
+
+<h3>POST /api/webhook — Réception WhatsApp</h3>
+<p>
+Twilio appelle cette URL automatiquement dès qu'un patient envoie un WhatsApp.
+C'est le point d'entrée de tous les messages entrants.
+</p>
+
+<ol class="steps">
+  <li><span class="step-num">1</span><span class="step-body"><strong>Parse</strong> le corps URL-encodé envoyé par Twilio (<code>From</code>, <code>Body</code>, <code>MessageSid</code>)</span></li>
+  <li><span class="step-num">2</span><span class="step-body"><strong>Déduplication</strong> : si le <code>MessageSid</code> existe déjà, on ignore (Twilio peut retenter)</span></li>
+  <li><span class="step-num">3</span><span class="step-body"><strong>Upsert patient</strong> : crée le patient s'il est inconnu, sinon met à jour son statut</span></li>
+  <li><span class="step-num">4</span><span class="step-body"><strong>Sauvegarde</strong> le message en base (<code>isSender: false</code>)</span></li>
+  <li><span class="step-num">5</span><span class="step-body"><strong>Incrémente</strong> le compteur de messages non lus</span></li>
+  <li><span class="step-num">6</span><span class="step-body"><strong>Émet</strong> via Socket.io pour mise à jour instantanée de l'UI</span></li>
+</ol>
+
+<pre><code><span class="cmt">// Étape 6 : notification temps réel</span>
+<span class="kw">const</span> <span class="var">io</span> = <span class="fn">getIO</span>()
+<span class="kw">if</span> (<span class="var">io</span>) <span class="punc">{</span>
+  <span class="var">io</span>.<span class="fn">emit</span>(<span class="str">'new_message'</span>,   <span class="punc">{</span> <span class="var">patientId</span>: <span class="var">patient</span>.<span class="var">id</span>, <span class="var">message</span>: <span class="var">messageForUI</span> <span class="punc">})</span>
+  <span class="var">io</span>.<span class="fn">emit</span>(<span class="str">'unread_update'</span>, <span class="punc">{</span> <span class="var">patientId</span>: <span class="var">patient</span>.<span class="var">id</span>, <span class="var">unreadCount</span>: <span class="var">updated</span>.<span class="var">unreadCount</span> <span class="punc">})</span>
+<span class="punc">}</span>
+</code></pre>
+
+<!-- ══════════════════ S7 ══════════════════ -->
+<div class="page-break"></div>
+<h2 id="s7"><span class="num">7</span> Temps réel — Socket.io</h2>
+
+<h3>Pourquoi Socket.io ?</h3>
+<p>
+HTTP est unidirectionnel : le client demande, le serveur répond. Pour recevoir des messages sans recharger la page,
+il faut une connexion <strong>bidirectionnelle persistante</strong> — c'est ce que WebSocket (et Socket.io) fournit.
+</p>
+
+<div class="box box-warn">
+  <p class="box-title">Contrainte Next.js</p>
+  <p>Next.js ne supporte pas nativement Socket.io dans son serveur interne. La solution : un <strong>serveur HTTP custom</strong>
+  (<code>server.js</code>) qui encapsule Next.js et Socket.io sur le même port.</p>
+</div>
+
+<h3>Serveur — <code>server.js</code></h3>
+
+<pre><code><span class="kw">const</span> <span class="punc">{</span> <span class="var">createServer</span> <span class="punc">}</span> = <span class="fn">require</span>(<span class="str">'http'</span>)
+<span class="kw">const</span> <span class="punc">{</span> <span class="cls">Server</span> <span class="punc">}</span>        = <span class="fn">require</span>(<span class="str">'socket.io'</span>)
+<span class="kw">const</span> <span class="var">next</span>              = <span class="fn">require</span>(<span class="str">'next'</span>)
+
+<span class="kw">const</span> <span class="var">app</span>        = <span class="fn">next</span>(<span class="punc">{</span> <span class="var">dev</span> <span class="punc">})</span>
+<span class="kw">const</span> <span class="var">httpServer</span> = <span class="fn">createServer</span>(<span class="var">handle</span>)   <span class="cmt">// Next.js gère les requêtes HTTP</span>
+
+<span class="kw">const</span> <span class="var">io</span> = <span class="kw">new</span> <span class="cls">Server</span>(<span class="var">httpServer</span>, <span class="punc">{</span>
+  <span class="var">cors</span>: <span class="punc">{</span> <span class="var">origin</span>: <span class="str">'*'</span> <span class="punc">}</span>,
+<span class="punc">})</span>
+
+<span class="cmt">// Accessible depuis les routes API via globalThis.io</span>
+<span class="var">globalThis</span>.<span class="var">io</span> = <span class="var">io</span>
+
+<span class="var">io</span>.<span class="fn">on</span>(<span class="str">'connection'</span>, (<span class="var">socket</span>) => <span class="punc">{</span>
+  <span class="var">console</span>.<span class="fn">log</span>(<span class="str">'[Socket.io] Client connecté:'</span>, <span class="var">socket</span>.<span class="var">id</span>)
+<span class="punc">})</span>
+
+<span class="var">httpServer</span>.<span class="fn">listen</span>(<span class="num-lit">3000</span>)
+</code></pre>
+
+<h3>Accès depuis les routes API — <code>lib/socket-server.ts</code></h3>
+
+<pre><code><span class="kw">export function</span> <span class="fn">getIO</span>()<span class="punc">: </span><span class="cls">Server</span> | <span class="kw">null</span> <span class="punc">{</span>
+  <span class="kw">return</span> <span class="var">globalThis</span>.<span class="var">io</span> ?? <span class="kw">null</span>
+<span class="punc">}</span>
+</code></pre>
+
+<h3>Client React — <code>lib/socket-client.ts</code></h3>
+<p>Singleton pour éviter de créer plusieurs connexions WebSocket lors des re-renders React :</p>
+
+<pre><code><span class="kw">let</span> <span class="var">socket</span>: <span class="cls">Socket</span> | <span class="kw">null</span> = <span class="kw">null</span>
+
+<span class="kw">export function</span> <span class="fn">getSocket</span>()<span class="punc">: </span><span class="cls">Socket</span> <span class="punc">{</span>
+  <span class="kw">if</span> (!<span class="var">socket</span>) <span class="punc">{</span>
+    <span class="var">socket</span> = <span class="fn">io</span>(<span class="punc">{</span> <span class="var">path</span>: <span class="str">'/socket.io'</span>, <span class="var">transports</span>: [<span class="str">'websocket'</span>, <span class="str">'polling'</span>] <span class="punc">})</span>
+  <span class="punc">}</span>
+  <span class="kw">return</span> <span class="var">socket</span>
+<span class="punc">}</span>
+</code></pre>
+
+<h3>Événements Socket.io</h3>
+<table>
+  <thead><tr><th>Événement</th><th>Émis par</th><th>Reçu par</th><th>Données</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><code>new_message</code></td>
+      <td>Webhook API</td>
+      <td>ChatContainer, SidebarClient</td>
+      <td><code>{ patientId, message }</code></td>
+    </tr>
+    <tr>
+      <td><code>unread_update</code></td>
+      <td>Webhook API</td>
+      <td>SidebarClient</td>
+      <td><code>{ patientId, unreadCount }</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ══════════════════ S8 ══════════════════ -->
+<div class="page-break"></div>
+<h2 id="s8"><span class="num">8</span> Intégration WhatsApp — Twilio</h2>
+
+<h3>Comment fonctionne Twilio ?</h3>
+<p>
+Twilio est un intermédiaire entre WhatsApp et notre application. Le pharmacien n'a pas besoin d'un compte
+WhatsApp Business directement — Twilio fournit un numéro sandbox pour les tests.
+</p>
+
+<div class="diagram">
+<pre>
+PATIENT                    TWILIO                     PHARMACHAT
+  │                           │                            │
+  │── "Bonjour, j'ai besoin ──►│                            │
+  │      de Doliprane"         │                            │
+  │                           │── POST /api/webhook ──────►│
+  │                           │   (Body, From, MessageSid) │
+  │                           │                            │── Sauvegarde MongoDB
+  │                           │                            │── Émet Socket.io
+  │                           │                            │── ✅ 200 OK ──────────►│
+  │                           │                            │
+  │                           │                            │  (pharmacien répond)
+  │                           │◄── API Twilio (POST) ──────│
+  │◄── "Disponible ! ─────────│                            │
+  │     En stock"             │                            │
+</pre>
+</div>
+
+<h3>Variables d'environnement requises</h3>
+
+<pre><code><span class="cmt"># .env</span>
+DATABASE_URL=<span class="str">"mongodb+srv://user:pass@cluster.mongodb.net/pharmachat"</span>
+
+TWILIO_ACCOUNT_SID=<span class="str">"ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"</span>
+TWILIO_AUTH_TOKEN=<span class="str">"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"</span>
+TWILIO_WHATSAPP_NUMBER=<span class="str">"+14155238886"</span>  <span class="cmt"># Numéro sandbox Twilio</span>
+</code></pre>
+
+<h3>Configuration du webhook Twilio</h3>
+<p>
+Dans la console Twilio, renseigner l'URL du webhook :
+<code>https://votre-domaine.com/api/webhook</code>
+</p>
+
+<div class="box box-warn">
+  <p class="box-title">En développement local</p>
+  <p>Twilio ne peut pas atteindre <code>localhost</code>. Utiliser <strong>ngrok</strong> pour exposer le port 3000 publiquement :
+  <br><code>ngrok http 3000</code> → copier l'URL <code>https://xxxx.ngrok.io</code> dans la console Twilio.</p>
+</div>
+
+<!-- ══════════════════ S9 ══════════════════ -->
+<div class="page-break"></div>
+<h2 id="s9"><span class="num">9</span> Composants React</h2>
+
+<h3>Server Components vs Client Components</h3>
+<p>
+Next.js App Router introduit deux types de composants. La règle est simple :
+<strong>tout est Server Component par défaut</strong>. On ajoute <code>'use client'</code> uniquement si nécessaire.
+</p>
+
+<table>
+  <thead>
+    <tr><th>Type</th><th>Directive</th><th>Capacités</th><th>Exemple dans PharmaChat</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Server Component</strong></td>
+      <td>aucune</td>
+      <td>Accès DB, async/await, pas d'état React</td>
+      <td><code>Sidebar.tsx</code>, <code>ChatHeader.tsx</code></td>
+    </tr>
+    <tr>
+      <td><strong>Client Component</strong></td>
+      <td><code>'use client'</code></td>
+      <td>useState, useEffect, événements, Socket.io</td>
+      <td><code>SidebarClient.tsx</code>, <code>ChatContainer.tsx</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="diagram">
+<pre>
+Sidebar.tsx (Server)           SidebarClient.tsx (Client)
+─────────────────────         ──────────────────────────────
+await getPatients()    ──►    useState(initialPatients)
+(accès MongoDB)               useEffect → Socket.io listen
+                              search filter
+                              Link navigation
+</pre>
+</div>
+
+<h3>Détail de chaque composant</h3>
+
+<h4>Sidebar.tsx — Server Component</h4>
+<p>Charge la liste des patients depuis MongoDB et transmet à <code>SidebarClient</code>.</p>
+<pre><code><span class="kw">export default async function</span> <span class="fn">Sidebar</span>() <span class="punc">{</span>
+  <span class="kw">const</span> <span class="var">patients</span> = <span class="kw">await</span> <span class="fn">getPatients</span>()  <span class="cmt">// requête MongoDB côté serveur</span>
+  <span class="kw">return</span> &lt;<span class="cls">SidebarClient</span> <span class="var">patients</span>={<span class="var">patients</span>} /&gt;
+<span class="punc">}</span>
+</code></pre>
+
+<h4>SidebarClient.tsx — Client Component</h4>
+<ul>
+  <li><strong>Recherche</strong> : filtre par nom de patient ou médicament (useState)</li>
+  <li><strong>Navigation active</strong> : surligne la conversation ouverte (usePathname)</li>
+  <li><strong>Temps réel</strong> : écoute <code>new_message</code> et <code>unread_update</code> via Socket.io</li>
+  <li><strong>Badges</strong> : icône WhatsApp/Mobile, compteur non-lus, aperçu dernier message</li>
+</ul>
+
+<h4>ChatContainer.tsx — Client Component</h4>
+<p>Le composant principal de conversation. Gère :</p>
+<ul>
+  <li><strong>Affichage des messages</strong> avec séparateurs de dates ("Aujourd'hui", "Hier"…)</li>
+  <li><strong>Bulles de chat</strong> : vert clair pour le pharmacien, gris pour le patient</li>
+  <li><strong>Statut des messages</strong> : ✓ (envoyé), ✓✓ gris (reçu), ✓✓ bleu (lu)</li>
+  <li><strong>Auto-scroll</strong> vers le dernier message</li>
+  <li><strong>Envoi optimiste</strong> : le message apparaît immédiatement avant la réponse serveur</li>
+  <li><strong>Socket.io</strong> : reçoit les nouveaux messages en temps réel</li>
+</ul>
+
+<h4>QuickActions.tsx — Client Component</h4>
+<p>5 boutons de réponses prédéfinies cliquables par le pharmacien :</p>
+<table>
+  <thead><tr><th>Bouton</th><th>Message envoyé</th></tr></thead>
+  <tbody>
+    <tr><td>Disponible</td><td>Ce médicament est disponible en pharmacie.</td></tr>
+    <tr><td>Rupture de stock</td><td>Ce médicament est en rupture de stock. Nous vous contacterons dès sa disponibilité.</td></tr>
+    <tr><td>Ordonnance requise</td><td>Ce médicament nécessite une ordonnance médicale valide.</td></tr>
+    <tr><td>Commander</td><td>Nous allons commander ce médicament pour vous. Délai estimé : 24-48h.</td></tr>
+    <tr><td>Informations</td><td>Pour plus d'informations, merci de vous présenter à la pharmacie.</td></tr>
+  </tbody>
+</table>
+
+<h4>ChatHeader.tsx — Server Component</h4>
+<p>Affiche le nom du patient, son numéro, son statut en ligne, ses médicaments, et le canal de communication.</p>
+
+<!-- ══════════════════ S10 ══════════════════ -->
+<div class="page-break"></div>
+<h2 id="s10"><span class="num">10</span> Flux complet de données</h2>
+
+<h3>Scénario A : Un patient envoie un message WhatsApp</h3>
+
+<ol class="steps">
+  <li>
+    <span class="step-num">1</span>
+    <span class="step-body">
+      <strong>Patient → WhatsApp → Twilio</strong><br>
+      Le patient écrit "Bonjour, avez-vous du Doliprane ?" sur WhatsApp.
+      Twilio reçoit ce message.
+    </span>
+  </li>
+  <li>
+    <span class="step-num">2</span>
+    <span class="step-body">
+      <strong>Twilio → POST /api/webhook</strong><br>
+      Twilio envoie une requête HTTP POST à notre webhook avec les paramètres :
+      <code>From=whatsapp:+212601234567</code>, <code>Body=Bonjour, avez-vous du Doliprane ?</code>, <code>MessageSid=SM...</code>
+    </span>
+  </li>
+  <li>
+    <span class="step-num">3</span>
+    <span class="step-body">
+      <strong>Webhook → MongoDB</strong><br>
+      Le webhook crée ou met à jour le patient, sauvegarde le message, incrémente <code>unreadCount</code>.
+    </span>
+  </li>
+  <li>
+    <span class="step-num">4</span>
+    <span class="step-body">
+      <strong>Webhook → Socket.io → React</strong><br>
+      Le webhook émet <code>new_message</code> et <code>unread_update</code>.
+      <code>ChatContainer</code> et <code>SidebarClient</code> reçoivent ces événements et mettent à jour leur état React instantanément.
+    </span>
+  </li>
+  <li>
+    <span class="step-num">5</span>
+    <span class="step-body">
+      <strong>Affichage immédiat</strong><br>
+      Sans rechargement : le message apparaît dans la conversation, et le badge rouge s'incrémente dans la sidebar.
+    </span>
+  </li>
+</ol>
+
+<h3>Scénario B : Le pharmacien envoie une réponse</h3>
+
+<ol class="steps">
+  <li>
+    <span class="step-num">1</span>
+    <span class="step-body">
+      <strong>Saisie → Mise à jour optimiste</strong><br>
+      Le pharmacien tape et appuie sur Entrée. <code>ChatContainer</code> ajoute immédiatement le message dans l'UI avec un ID temporaire (<code>temp-1234</code>), sans attendre le serveur.
+    </span>
+  </li>
+  <li>
+    <span class="step-num">2</span>
+    <span class="step-body">
+      <strong>POST /api/patients/[id]/messages</strong><br>
+      En parallèle, une requête API est envoyée. Le serveur sauvegarde en MongoDB et appelle l'API Twilio.
+    </span>
+  </li>
+  <li>
+    <span class="step-num">3</span>
+    <span class="step-body">
+      <strong>Réponse → Remplacement</strong><br>
+      À réception de la réponse 201, le message temporaire est remplacé par le message sauvegardé (avec le vrai ID MongoDB).
+    </span>
+  </li>
+  <li>
+    <span class="step-num">4</span>
+    <span class="step-body">
+      <strong>Twilio → Patient WhatsApp</strong><br>
+      Twilio délivre le message sur le téléphone du patient via WhatsApp.
+    </span>
+  </li>
+</ol>
+
+<!-- ══════════════════ S11 ══════════════════ -->
+<div class="page-break"></div>
+<h2 id="s11"><span class="num">11</span> Concepts clés expliqués</h2>
+
+<h3>App Router de Next.js</h3>
+<p>
+L'App Router remplace l'ancien Pages Router. Chaque dossier dans <code>app/</code> devient une route URL.
+Le fichier <code>page.tsx</code> est le composant rendu. <code>[patientId]</code> entre crochets est un paramètre dynamique.
+</p>
+<table>
+  <thead><tr><th>Dossier</th><th>URL</th><th>Rendu</th></tr></thead>
+  <tbody>
+    <tr><td><code>app/page.tsx</code></td><td><code>/</code></td><td>Page d'accueil</td></tr>
+    <tr><td><code>app/chat/[patientId]/page.tsx</code></td><td><code>/chat/6819abc...</code></td><td>Conversation d'un patient</td></tr>
+    <tr><td><code>app/api/patients/route.ts</code></td><td><code>/api/patients</code></td><td>API JSON</td></tr>
+  </tbody>
+</table>
+
+<h3>Mise à jour optimiste (Optimistic Update)</h3>
+<p>
+Technique UX qui affiche le résultat d'une action <em>avant</em> que le serveur confirme.
+Si le serveur échoue, on peut rollback. Ici, le message apparaît instantanément, puis est remplacé par la version confirmée.
+</p>
+<div class="box box-success">
+  <p class="box-title">Résultat perçu</p>
+  <p>L'expérience est identique à WhatsApp : le message s'affiche instantanément dès la frappe, sans latence réseau visible.</p>
+</div>
+
+<h3>WebSocket vs HTTP polling</h3>
+<table>
+  <thead><tr><th></th><th>HTTP Polling</th><th>WebSocket (Socket.io)</th></tr></thead>
+  <tbody>
+    <tr><td>Principe</td><td>Le client demande toutes les X secondes</td><td>Connexion persistante bidirectionnelle</td></tr>
+    <tr><td>Latence</td><td>Jusqu'à X secondes</td><td>Quasi-instantanée (&lt;50ms)</td></tr>
+    <tr><td>Charge serveur</td><td>Élevée (N clients × N requêtes/min)</td><td>Faible (1 connexion par client)</td></tr>
+    <tr><td>Utilisé dans PharmaChat</td><td>Fallback automatique</td><td>Mode principal</td></tr>
+  </tbody>
+</table>
+
+<h3>Singleton Pattern</h3>
+<p>
+Utilisé deux fois dans ce projet :
+</p>
+<ul>
+  <li><strong>PrismaClient</strong> — une seule instance de connexion DB pour toute l'application</li>
+  <li><strong>Socket.io Client</strong> — une seule connexion WebSocket par onglet navigateur</li>
+</ul>
+<p>
+Sans ce pattern, chaque re-render React ou rechargement Next.js créerait de nouvelles connexions, épuisant les ressources.
+</p>
+
+<h3>ORM (Object-Relational Mapper)</h3>
+<p>
+Prisma traduit des appels TypeScript en requêtes MongoDB. Avantages :
+</p>
+<ul>
+  <li>Autocomplétion complète dans l'IDE (<code>prisma.patient.findMany({...})</code>)</li>
+  <li>Types inférés automatiquement — pas d'erreurs de champ inexistant</li>
+  <li>Migrations de schéma gérées automatiquement (<code>prisma db push</code>)</li>
+</ul>
+
+<h3>Déduplication de messages</h3>
+<p>
+Twilio peut retenter l'envoi du webhook si la réponse tarde. Sans déduplication, le même message serait
+sauvegardé deux fois. La vérification sur <code>whatsappId</code> (MessageSid unique) évite ce doublon :
+</p>
+<pre><code><span class="kw">const</span> <span class="var">existing</span> = <span class="kw">await</span> <span class="var">prisma</span>.<span class="var">message</span>.<span class="fn">findFirst</span>(<span class="punc">{</span> <span class="var">where</span>: <span class="punc">{</span> <span class="var">whatsappId</span>: <span class="var">messageSid</span> <span class="punc">}</span> <span class="punc">})</span>
+<span class="kw">if</span> (<span class="var">existing</span>) <span class="kw">return new</span> <span class="cls">NextResponse</span>(<span class="str">''</span>, <span class="punc">{</span> <span class="var">status</span>: <span class="num-lit">200</span> <span class="punc">})</span>  <span class="cmt">// Ignorer le doublon</span>
+</code></pre>
+
+<!-- ══════════════════ S12 ══════════════════ -->
+<div class="page-break"></div>
+<h2 id="s12"><span class="num">12</span> Comment lancer le projet</h2>
+
+<h3>Prérequis</h3>
+<ul>
+  <li>Node.js 18+ installé</li>
+  <li>Un compte MongoDB Atlas (gratuit) avec une base <code>pharmachat</code></li>
+  <li>Un compte Twilio (pour WhatsApp — optionnel en développement)</li>
+</ul>
+
+<h3>Étapes d'installation</h3>
+<ol class="steps">
+  <li>
+    <span class="step-num">1</span>
+    <span class="step-body">
+      <strong>Cloner et installer les dépendances</strong>
+      <pre><code>git clone &lt;repo&gt;
+cd pharmachat
+npm install</code></pre>
+    </span>
+  </li>
+  <li>
+    <span class="step-num">2</span>
+    <span class="step-body">
+      <strong>Configurer les variables d'environnement</strong>
+      <pre><code><span class="cmt"># Créer un fichier .env à la racine</span>
+DATABASE_URL="mongodb+srv://user:pass@cluster.mongodb.net/pharmachat"
+TWILIO_ACCOUNT_SID="ACxxxxx"
+TWILIO_AUTH_TOKEN="xxxxxx"
+TWILIO_WHATSAPP_NUMBER="+14155238886"</code></pre>
+    </span>
+  </li>
+  <li>
+    <span class="step-num">3</span>
+    <span class="step-body">
+      <strong>Synchroniser le schéma Prisma avec MongoDB</strong>
+      <pre><code>npx prisma db push</code></pre>
+    </span>
+  </li>
+  <li>
+    <span class="step-num">4</span>
+    <span class="step-body">
+      <strong>Démarrer le serveur de développement</strong>
+      <pre><code>node server.js</code></pre>
+      <p style="margin-top:8px">L'application est accessible sur <code>http://localhost:3000</code></p>
+    </span>
+  </li>
+  <li>
+    <span class="step-num">5</span>
+    <span class="step-body">
+      <strong>(Optionnel) Exposer pour Twilio</strong>
+      <pre><code>ngrok http 3000
+<span class="cmt"># Copier l'URL ngrok dans la console Twilio → webhook</span></code></pre>
+    </span>
+  </li>
+</ol>
+
+<hr class="separator" />
+
+<h3>Résumé du flux complet en une image</h3>
+<div class="diagram">
+<pre>
+WhatsApp Patient
+      │
+      ▼
+   Twilio (API WhatsApp Business)
+      │ POST /api/webhook
+      ▼
+┌─────────────────────────────────┐
+│         server.js               │
+│   (HTTP + Socket.io sur :3000)  │
+│                                 │
+│  ┌─────────────────────────┐    │
+│  │    Next.js App Router   │    │
+│  │                         │    │
+│  │  /api/webhook ──────────┼──► MongoDB (via Prisma)
+│  │  /api/patients/[id]/msg ┼──► MongoDB + Twilio API
+│  │                         │    │
+│  │  Sidebar (Server Comp.) ┼──► MongoDB read
+│  │  ChatContainer (Client) │    │
+│  └─────────────────────────┘    │
+│                                 │
+│  globalThis.io (Socket.io) ─────┼──► React (new_message, unread_update)
+└─────────────────────────────────┘
+      │
+      ▼
+   Navigateur du Pharmacien
+   (React UI mis à jour en temps réel)
+</pre>
+</div>
+
+<hr class="separator" />
+
+<div style="text-align:center; color:#718096; font-size:12px; margin-top:32px; padding-top:24px; border-top: 1px solid #e2e8f0;">
+  <p><strong>PharmaChat</strong> — Documentation réalisée par Oussama Salmi</p>
+  <p>Stack : Next.js 16 · TypeScript · Prisma · MongoDB · Socket.io · Twilio · Tailwind CSS v4</p>
+  <p style="margin-top:6px;">Avril 2026</p>
+</div>
+
+</div><!-- /container -->
+
+<script>
+  // Auto-highlight bouton print au survol
+  document.querySelector('.print-btn').addEventListener('mouseenter', function() {
+    this.style.transform = 'scale(1.05)';
+  });
+  document.querySelector('.print-btn').addEventListener('mouseleave', function() {
+    this.style.transform = 'scale(1)';
+  });
+</script>
+
+</body>
+</html>

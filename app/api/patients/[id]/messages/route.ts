@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import twilio from 'twilio';
 import { prisma } from '@/lib/prisma';
 import { Message, MessageSender, MessageStatus } from '@/lib/data';
-
-// ── Transformation Prisma → format UI ────────────────────────────────────────
 
 function toUIMessage(msg: {
   id: string;
@@ -19,9 +18,6 @@ function toUIMessage(msg: {
     status:    msg.status as MessageStatus,
   };
 }
-
-// ── GET /api/patients/[id]/messages ──────────────────────────────────────────
-// Utilisé par ChatContainer pour le polling — retourne le format UI
 
 export async function GET(
   _req: NextRequest,
@@ -42,9 +38,6 @@ export async function GET(
   }
 }
 
-// ── POST /api/patients/[id]/messages ─────────────────────────────────────────
-// Le pharmacien envoie une réponse — body: { content: string }
-
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -55,10 +48,7 @@ export async function POST(
     const content = (body.content ?? '').trim();
 
     if (!content) {
-      return NextResponse.json(
-        { error: 'Le contenu du message est requis' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Le contenu du message est requis' }, { status: 400 });
     }
 
     const patient = await prisma.patient.findUnique({ where: { id } });
@@ -81,7 +71,24 @@ export async function POST(
       data:  { updatedAt: new Date() },
     });
 
-    // Retourne aussi au format UI pour la mise à jour optimiste
+    // Envoi WhatsApp via Twilio
+    const accountSid = process.env.TWILIO_ACCOUNT_SID;
+    const authToken  = process.env.TWILIO_AUTH_TOKEN;
+    const from       = process.env.TWILIO_WHATSAPP_NUMBER;
+
+    if (accountSid && authToken && from) {
+      try {
+        const client = twilio(accountSid, authToken);
+        await client.messages.create({
+          from: `whatsapp:${from}`,
+          to:   `whatsapp:${patient.phone}`,
+          body: content,
+        });
+      } catch (twilioErr) {
+        console.error('[Twilio] Erreur envoi:', twilioErr);
+      }
+    }
+
     return NextResponse.json(toUIMessage(row), { status: 201 });
   } catch (error) {
     console.error('[POST /api/patients/[id]/messages]', error);

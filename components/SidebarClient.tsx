@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Patient } from '@/lib/data';
+import { getSocket } from '@/lib/socket-client';
 
 function getInitials(name: string): string {
   return name
@@ -38,21 +39,74 @@ export default function SidebarClient({ patients: initialPatients }: { patients:
   const [search, setSearch] = useState('');
   const pathname = usePathname();
 
-  // ── Polling : met à jour la liste et les unread counts toutes les 5s ──────
+  // ── Notification sonore ───────────────────────────────────────────────────
+  const playNotificationSound = () => {
+    try {
+      const ctx = new AudioContext();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.setValueAtTime(880, ctx.currentTime);
+      osc.frequency.setValueAtTime(660, ctx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.4);
+    } catch {}
+  };
+
+  // ── Socket.io : mise à jour en temps réel des non-lus et derniers messages ─
   useEffect(() => {
-    const poll = async () => {
-      try {
-        const res = await fetch('/api/patients');
-        if (!res.ok) return;
-        const fresh: Patient[] = await res.json();
-        setPatients(fresh);
-      } catch {
-        // Silencieux si réseau coupé brièvement
+    // Demande permission notifications navigateur
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+
+    const socket = getSocket();
+
+    const handleNewMessage = ({ patientId, message }: { patientId: string; message: { content: string; timestamp: string } }) => {
+      const time = new Date(message.timestamp).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+
+      // Son + notification navigateur
+      playNotificationSound();
+      if ('Notification' in window && Notification.permission === 'granted') {
+        setPatients((prev) => {
+          const patient = prev.find((p) => p.id === patientId);
+          if (patient) {
+            new Notification(`💊 ${patient.name}`, {
+              body: message.content,
+              icon: '/favicon.ico',
+            });
+          }
+          return prev;
+        });
       }
+
+      // Remonte le patient en haut de la liste
+      setPatients((prev) => {
+        const updated = prev.map((p) =>
+          p.id === patientId ? { ...p, lastMessage: message.content, lastMessageTime: time } : p
+        );
+        const target = updated.find((p) => p.id === patientId);
+        const rest   = updated.filter((p) => p.id !== patientId);
+        return target ? [target, ...rest] : updated;
+      });
     };
 
-    const interval = setInterval(poll, 5000);
-    return () => clearInterval(interval);
+    const handleUnreadUpdate = ({ patientId, unreadCount }: { patientId: string; unreadCount: number }) => {
+      setPatients((prev) =>
+        prev.map((p) => (p.id === patientId ? { ...p, unreadCount } : p))
+      );
+    };
+
+    socket.on('new_message', handleNewMessage);
+    socket.on('unread_update', handleUnreadUpdate);
+
+    return () => {
+      socket.off('new_message', handleNewMessage);
+      socket.off('unread_update', handleUnreadUpdate);
+    };
   }, []);
 
   const filtered = patients.filter(

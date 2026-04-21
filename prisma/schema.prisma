@@ -28,7 +28,7 @@ model Message {
   channel     String   @default("whatsapp")
   isSender    Boolean  @default(false)
   status      String   @default("delivered")
-  whatsappId  String?  @unique
+  whatsappId  String?
   patientId   String   @db.ObjectId
   patient     Patient  @relation(fields: [patientId], references: [id])
   createdAt   DateTime @default(now())
